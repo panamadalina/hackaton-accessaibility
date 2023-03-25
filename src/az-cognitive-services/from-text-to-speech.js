@@ -13,14 +13,18 @@ const fs = require('fs');
  * @param {*} text text to convert to audio/speech
  * @param {*} filename optional - best for long text - temp file for converted speech/audio
  */
-const textToSpeech = async (key, region, text, filename)=> {
+const textToSpeech = async (key, region, text, language,filename)=> {
     
     // convert callback function to promise
     return new Promise((resolve, reject) => {
         
-        const speechConfig = sdk.SpeechConfig.fromSubscription(key, region);
+        var speechConfig = sdk.SpeechConfig.fromSubscription(key, region);
         speechConfig.speechSynthesisOutputFormat = 5; // mp3
+        speechConfig.speechRecognitionLanguage =language//'ro-RO'//'ro-RO-EmilNeural'//'ro-RO-AlinaNeural';//"ro-RO";//"en-US";
         
+        // The language of the voice that speaks.
+        speechConfig.speechSynthesisVoiceName =language// "ro-RO-EmilNeural"; 
+
         let audioConfig = null;
         
         if (filename) {

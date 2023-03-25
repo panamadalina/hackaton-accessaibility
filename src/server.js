@@ -2,7 +2,12 @@ const express = require('express');
 const favicon = require('serve-favicon');
 const path = require('path');
 const utils = require('./utils');
-const { textToSpeech } = require('./azure-cognitiveservices-speech');
+const { textToSpeech } = require('./az-cognitive-services/from-text-to-speech');
+const { speechToText } = require('./az-cognitive-services/from-speech-to-text');
+
+
+const key="7288c10f030b4911a55596df1c605599"
+const region='eastus'
 
 // creates a temp file on server, the streams to client
 /* eslint-disable no-unused-vars */
@@ -29,26 +34,34 @@ const create = async () => {
 
     });
 
-    app.get('/text-to-speech', async (req, res, next) => {
-    
-        const { key, region, phrase, file } = req.query;
-        
+    app.get('/text-to-speech', async (req, res, next) => {        
+        var phrase=req.query.phrase || "hello world" 
+        var language= req.query.language || "ro-Ro-EmilNeural"
+       // phrase=req.query.phrase
         if (!key || !region || !phrase) res.status(404).send('Invalid query string');
         
         let fileName = null;
-        
-        // stream from file or memory
-        if (file && file === true) {
-            fileName = `./temp/stream-from-file-${timeStamp()}.mp3`;
-        }
-        
-        const audioStream = await textToSpeech(key, region, phrase, fileName);
+
+        fileName=`rezultat.mp3`
+        const audioStream = await textToSpeech(key, region, phrase,language, fileName);
         res.set({
             'Content-Type': 'audio/mpeg',
             'Transfer-Encoding': 'chunked'
         });
         audioStream.pipe(res);
     });
+    app.get('/speech-to-text', async (req, res, next) => { 
+        var language= req.query.language || "ro-Ro";
+        var audio=req.query.audio //|| "https://speechtotextdemo.blob.core.windows.net/speechtotextcontainer/ro-RO-EmilNeural-2020-10-20T15_00_00_000Z-2020-10-20T15_00_10_000Z.mp3" 
+        const textFromSpeech = await speechToText(key, region, audio,language);
+        res.set({
+            'Content-Type': 'application/json'
+           // 'Transfer-Encoding': 'chunked'
+        });
+        //audioStream.pipe(res);
+        res.send(textFromSpeech);
+    });
+
     
 
     // Catch errors
