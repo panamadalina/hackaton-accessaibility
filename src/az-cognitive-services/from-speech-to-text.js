@@ -15,51 +15,7 @@ const fs = require('fs');
  */
 const speechToText = async (key, region, audio, language)=> {
     
-    // convert callback function to promise
-    // return new Promise((resolve, reject) => {
-        
-    //     var speechConfig = sdk.SpeechConfig.fromSubscription(key, region);
-    //     speechConfig.speechSynthesisOutputFormat = 5; // mp3
-    //     speechConfig.speechRecognitionLanguage =language//'ro-RO'//'ro-RO-EmilNeural'//'ro-RO-AlinaNeural';//"ro-RO";//"en-US";
-        
-    //     // The language of the voice that speaks.
-    //     speechConfig.speechSynthesisVoiceName =language// "ro-RO-EmilNeural"; 
-
-    //     let audioConfig = null;
-        
-    //     if (filename) {
-    //         audioConfig = sdk.AudioConfig.fromAudioFileOutput(filename);
-    //     }
-        
-    //     const synthesizer = new sdk.SpeechSynthesizer(speechConfig, audioConfig);
-
-    //     synthesizer.speakTextAsync(
-    //         text,
-    //         result => {
-                
-    //             const { audioData } = result;
-
-    //             synthesizer.close();
-                
-    //             if (filename) {
-                    
-    //                 // return stream from file
-    //                 const audioFile = fs.createReadStream(filename);
-    //                 resolve(audioFile);
-                    
-    //             } else {
-                    
-    //                 // return stream from memory
-    //                 const bufferStream = new PassThrough();
-    //                 bufferStream.end(Buffer.from(audioData));
-    //                 resolve(bufferStream);
-    //             }
-    //         },
-    //         error => {
-    //             synthesizer.close();
-    //             reject(error);
-    //         }); 
-    // });
+  //not implemented
 };
 
 
