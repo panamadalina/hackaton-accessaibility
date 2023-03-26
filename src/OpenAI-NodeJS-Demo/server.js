@@ -26,7 +26,7 @@ const create = async () => {
 
     // server
     const app = express();
-    app.use(favicon(path.join(__dirname, '../public', 'favicon.ico')));
+    app.use(favicon(path.join(__dirname, './public', 'favicon.ico')));
     
     // Log request
     app.use(utils.appLogger);
@@ -39,7 +39,7 @@ const create = async () => {
 
     // root route - serve static file
     app.get('/', (req, res) => {
-        return res.sendFile(path.join(__dirname, '../public/client.html'));
+        return res.sendFile(path.join(__dirname, './public/client.html'));
 
     });
 
