@@ -7,31 +7,38 @@
 </head>
 
 <body>
+<div id="content">
 
-
-
+  <h1 style="font-weight:500;">Microsoft Cognitive Services Speech </h1>
   <div id="speechToText">
 
-    <button id="scenarioStartButton">recognizeOnceAsync()</button>
-    <button id="scenarioStopButton" disabled="">STOP recognizeOnceAsync()</button>
+    <button id="scenarioStartButton" onclick="doRecognizeOnceAsync()">Start recording</button>
+    <!-- <button id="scenarioStopButton" disabled="">STOP recognizeOnceAsync()</button> -->
   </div>
 
   <div id="textToSpeech" style="display:block">
-    <h1 style="font-weight:500;">Microsoft Cognitive Services Speech </h1>
+   
     
-    <p>Input Text (max 255 char)</p>
+    <p>Comanda detectata (max 255 char)</p>
     <textarea id="phraseDiv" style="display: inline-block;width:500px;height:50px"  maxlength="255"
-    >Bună tuturor!</textarea>
-    <!-- <div>
-      <button id="clientAudioAzure" onclick="getSpeechFromAzure()">Get directly from Azure</button>
-    </div> -->
+    ></textarea>
+
+    <div style="display: none;">
+      <p>STATUS:</p>
+    <textarea id="statusDiv"
+    style="display: inline-block;width:400px;height:200px;overflow: scroll;white-space: nowrap;">
+    </textarea>
+    </div>
+    
 
     <div>
-      <p>Stream audio from server</p>
+      <p>Raspuns audio de la server</p>
       <button  onclick="getSpeechfromServer()">Get from server</button>
-      <audio autoplay id="loadingAudioStream"  controls="controls" style=" display: none; visibility: hidden"></audio>
-      <audio autoplay id="serverAudioStream"  controls="controls" style=" display: none; visibility: hidden"></audio>
+      <audio  id="loadingAudioStream"  controls="controls" style=" display: none; visibility: hidden"></audio>
+      <audio  id="serverAudioStream"  controls="controls" style=" display: none; visibility: hidden"></audio>
     </div>
+  </div>
+
   </div>
 
   <!-- Speech SDK reference sdk. -->
@@ -62,27 +69,209 @@
       window.alert(JSON.stringify(error));
     }
 
+//Speech to text
 
-  // Text to speech conversion from server API
-  function getSpeechfromServer() {
-    getSpeechFromAzure("Got it! Loading...",()=>
-    {
-      //getSpeechFromServer();
-      phrase=document.getElementById('phraseDiv').value.trim(); //Text de tradus!
-      var serverSrc = `/text-to-speech`
-      
-      var serverAudioStreamControl = document.getElementById('serverAudioStream');
-      const streamQueryString = `phrase=${phrase}`;
-      serverAudioStreamControl.src = `${serverSrc}?${streamQueryString}`;
-      console.log(serverAudioStreamControl.src)
-      serverAudioStreamControl.type = "audio/mpeg";
-      serverAudioStreamControl.disabled = true;
-      document.getElementById('serverAudioStream').style.display = 'block';
-      document.getElementById('serverAudioStream').style.visibility = 'hidden';
-    });
-    
-}
-////////////////
+/////////////////////
+        function onRecognizing(sender, recognitionEventArgs) {
+            var result = recognitionEventArgs.result;
+            statusDiv.innerHTML += `(recognizing) Reason: ${SpeechSDK.ResultReason[result.reason]}`
+                + ` Text: ${result.text}\r\n`;
+            // Update the hypothesis line in the phrase/result view (only have one)
+            phraseDiv.innerHTML = phraseDiv.innerHTML.replace(/(.*)(^|[\r\n]+).*\[\.\.\.\][\r\n]+/, '$1$2')
+                + `${result.text} [...]\r\n`;
+            phraseDiv.scrollTop = phraseDiv.scrollHeight;
+        }
+
+        function onRecognized(sender, recognitionEventArgs) {
+            var result = recognitionEventArgs.result;
+            onRecognizedResult(recognitionEventArgs.result);
+        }
+
+        function onRecognizedResult(result) {
+            phraseDiv.scrollTop = phraseDiv.scrollHeight;
+
+            statusDiv.innerHTML += `(recognized)  Reason: ${SpeechSDK.ResultReason[result.reason]}`;
+            phraseDiv.innerHTML = '';
+
+            switch (result.reason) {
+                case SpeechSDK.ResultReason.NoMatch:
+                    var noMatchDetail = SpeechSDK.NoMatchDetails.fromResult(result);
+                    statusDiv.innerHTML += ` NoMatchReason: ${SpeechSDK.NoMatchReason[noMatchDetail.reason]}\r\n`;
+                    break;
+                case SpeechSDK.ResultReason.Canceled:
+                    var cancelDetails = SpeechSDK.CancellationDetails.fromResult(result);
+                    statusDiv.innerHTML += ` CancellationReason: ${SpeechSDK.CancellationReason[cancelDetails.reason]}`;
+                        + (cancelDetails.reason === SpeechSDK.CancellationReason.Error 
+                            ? `: ${cancelDetails.errorDetails}` : ``)
+                        + `\r\n`;
+                    break;
+                case SpeechSDK.ResultReason.RecognizedSpeech:
+                case SpeechSDK.ResultReason.TranslatedSpeech:
+                case SpeechSDK.ResultReason.RecognizedIntent:
+                    statusDiv.innerHTML += `\r\n`;
+
+                phraseDiv.innerHTML += `${result.text}\r\n`;
+
+                    // if (useDetailedResults) {
+                    //     var detailedResultJson = JSON.parse(result.json);
+
+                    //     // Detailed result JSON includes substantial extra information:
+                    //     //  detailedResultJson['NBest'] is an array of recognition alternates
+                    //     //  detailedResultJson['NBest'][0] is the highest-confidence alternate
+                    //     //  ...['Confidence'] is the raw confidence score of an alternate
+                    //     //  ...['Lexical'] and others provide different result forms
+                    //     var displayText = detailedResultJson['DisplayText'];
+                    //     phraseDiv.innerHTML += `Detailed result for "${displayText}":\r\n`
+                    //     + `${JSON.stringify(detailedResultJson, null, 2)}\r\n`;
+                    // } else if (result.text) {
+                    //     phraseDiv.innerHTML += `${result.text}\r\n`;
+                    // }
+
+                    var intentJson = result.properties
+                        .getProperty(SpeechSDK.PropertyId.LanguageUnderstandingServiceResponse_JsonResult);
+                    if (intentJson) {
+                        phraseDiv.innerHTML += `${intentJson}\r\n`;
+                    }
+
+                    if (result.translations) {
+                        var resultJson = JSON.parse(result.json);
+                        resultJson['privTranslationPhrase']['Translation']['Translations'].forEach(
+                            function (translation) {
+                            phraseDiv.innerHTML += ` [${translation.Language}] ${translation.Text}\r\n`;
+                        });
+                    }
+
+              
+                    break;
+            }
+        }
+
+        function onSessionStarted(sender, sessionEventArgs) {
+            statusDiv.innerHTML += `(sessionStarted) SessionId: ${sessionEventArgs.sessionId}\r\n`;
+
+            scenarioStartButton.disabled = true;
+        }
+
+        function onSessionStopped(sender, sessionEventArgs) {
+            statusDiv.innerHTML += `(sessionStopped) SessionId: ${sessionEventArgs.sessionId}\r\n`;
+
+            // for (const thingToDisableDuringSession of thingsToDisableDuringSession) {
+            //     thingToDisableDuringSession.disabled = false;
+            // }
+
+            scenarioStartButton.disabled = false;
+          //  scenarioStopButton.disabled = true;
+        }
+
+        function onCanceled (sender, cancellationEventArgs) {
+            window.console.log(cancellationEventArgs);
+
+            statusDiv.innerHTML += "(cancel) Reason: " + SpeechSDK.CancellationReason[cancellationEventArgs.reason];
+            if (cancellationEventArgs.reason === SpeechSDK.CancellationReason.Error) {
+                statusDiv.innerHTML += ": " + cancellationEventArgs.errorDetails;
+            }
+            statusDiv.innerHTML += "\r\n";
+        }
+
+/////////////////////
+
+        function applyCommonConfigurationTo(recognizer) {
+                    // The 'recognizing' event signals that an intermediate recognition result is received.
+                    // Intermediate results arrive while audio is being processed and represent the current "best guess" about
+                    // what's been spoken so far.
+                    recognizer.recognizing = onRecognizing;
+
+                    // The 'recognized' event signals that a finalized recognition result has been received. These results are
+                    // formed across complete utterance audio (with either silence or eof at the end) and will include
+                    // punctuation, capitalization, and potentially other extra details.
+                    // 
+                    // * In the case of continuous scenarios, these final results will be generated after each segment of audio
+                    //   with sufficient silence at the end.
+                    // * In the case of intent scenarios, only these final results will contain intent JSON data.
+                    // * Single-shot scenarios can also use a continuation on recognizeOnceAsync calls to handle this without
+                    //   event registration.
+                    recognizer.recognized = onRecognized;
+
+                    // The 'canceled' event signals that the service has stopped processing speech.
+                    // https://docs.microsoft.com/javascript/api/microsoft-cognitiveservices-speech-sdk/speechrecognitioncanceledeventargs?view=azure-node-latest
+                    // This can happen for two broad classes of reasons:
+                    // 1. An error was encountered.
+                    //    In this case, the .errorDetails property will contain a textual representation of the error.
+                    // 2. No additional audio is available.
+                    //    This is caused by the input stream being closed or reaching the end of an audio file.
+                    recognizer.canceled = onCanceled;
+
+                    // The 'sessionStarted' event signals that audio has begun flowing and an interaction with the service has
+                    // started.
+                    recognizer.sessionStarted = onSessionStarted;
+
+                    // The 'sessionStopped' event signals that the current interaction with the speech service has ended and
+                    // audio has stopped flowing.
+                    recognizer.sessionStopped = onSessionStopped;
+
+                    // PhraseListGrammar allows for the customization of recognizer vocabulary.
+                    // The semicolon-delimited list of words or phrases will be treated as additional, more likely components
+                    // of recognition results when applied to the recognizer.
+                    //
+                    // See https://docs.microsoft.com/azure/cognitive-services/speech-service/get-started-speech-to-text#improve-recognition-accuracy
+                    // if (phrases.value) {
+                    //     var phraseListGrammar = SpeechSDK.PhraseListGrammar.fromRecognizer(recognizer);
+                    //     phraseListGrammar.addPhrases(phrases.value.split(";"));
+                    // }
+                }
+
+        function doRecognizeOnceAsync(){
+
+          getSpeechFromAzure("Cum te pot ajuta?")
+            phraseDiv = document.getElementById("phraseDiv");
+            var audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
+            var speechConfig = SpeechSDK.SpeechConfig.fromSubscription(resourceKey, resourceRegion);
+            speechConfig.speechRecognitionLanguage ='ro-RO'//'ro-RO-EmilNeural'//'ro-RO-AlinaNeural';//"ro-RO";//"en-US";        
+        // The language of the voice that speaks.
+        speechConfig.speechSynthesisVoiceName = "ro-RO"; 
+            if (!audioConfig || !speechConfig) return;
+            reco = new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
+            applyCommonConfigurationTo(reco);
+            // Note: in this scenario sample, the 'recognized' event is not being set to instead demonstrate
+            // continuation on the 'recognizeOnceAsync' call. 'recognized' can be set in much the same way as
+            // 'recognizing' if an event-driven approach is preferable.
+            reco.recognized = undefined;
+            // Note: this scenario sample demonstrates result handling via continuation on the recognizeOnceAsync call.
+                    // The 'recognized' event handler can be used in a similar fashion.
+                    reco.recognizeOnceAsync(
+                        function (successfulResult) {
+                            onRecognizedResult(successfulResult);
+                        },
+                        function (err) {
+                            window.console.log(err);
+                            phraseDiv.innerHTML += "ERROR: " + err;
+                        });
+
+        }
+
+
+    // Text to speech conversion from server API
+    function getSpeechfromServer() {
+        getSpeechFromAzure("Am înțeles, procesez informația...",()=>
+        {
+          //getSpeechFromServer();
+          phrase=document.getElementById('phraseDiv').value.trim(); //Text de tradus!
+          var serverSrc = `/text-to-speech`
+          
+          var serverAudioStreamControl = document.getElementById('serverAudioStream');
+          const streamQueryString = `phrase=${phrase}`;
+          serverAudioStreamControl.src = `${serverSrc}?${streamQueryString}`;
+          console.log(serverAudioStreamControl.src)
+          serverAudioStreamControl.type = "audio/mpeg";
+          serverAudioStreamControl.disabled = true;
+          document.getElementById('serverAudioStream').style.display = 'block';
+          document.getElementById('serverAudioStream').style.visibility = 'hidden';
+          serverAudioStreamControl.currentTime = 0;
+          serverAudioStreamControl.play();
+        });
+        
+    }
+    //////////////////////
     
     // Loading sound voice from Azure Cognitive Services
     function getSpeechFromAzure(phraseOrWord,callback) {
@@ -90,6 +279,7 @@
       phrase=phraseOrWord //|| document.getElementById('phraseDiv').value.trim(); //Text de tradus!
       // authorization for Speech service
       var speechConfig = SpeechSDK.SpeechConfig.fromSubscription(resourceKey, resourceRegion);
+      speechConfig.speechSynthesisVoiceName ="ro-RO-EmilNeural"; 
 
       // new Speech object
       synthesizer = new SpeechSDK.SpeechSynthesizer(speechConfig);
@@ -107,6 +297,9 @@
             audioElement = document.getElementById("loadingAudioStream");
             const blob = new Blob([result.audioData], { type: "audio/mpeg" });
             const url = window.URL.createObjectURL(blob);
+
+            audioElement.currentTime=0;
+            audioElement.play();
             const sleep = ms => new Promise(r => setTimeout(r, ms));
             sleep(1000).then(()=>{
               callback();

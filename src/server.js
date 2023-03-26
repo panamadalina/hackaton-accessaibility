@@ -37,7 +37,6 @@ const create = async () => {
     app.get('/text-to-speech', async (req, res, next) => {        
         var phrase=req.query.phrase || "hello world" 
         var language= req.query.language || "ro-Ro-EmilNeural"
-       // phrase=req.query.phrase
         if (!key || !region || !phrase) res.status(404).send('Invalid query string');
         
         let fileName = null;
@@ -56,9 +55,7 @@ const create = async () => {
         const textFromSpeech = await speechToText(key, region, audio,language);
         res.set({
             'Content-Type': 'application/json'
-           // 'Transfer-Encoding': 'chunked'
         });
-        //audioStream.pipe(res);
         res.send(textFromSpeech);
     });
 
