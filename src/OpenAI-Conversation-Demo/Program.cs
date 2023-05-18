@@ -97,7 +97,7 @@ namespace OpenAI_Conversation_Demo
 
         private static SpeechConfig CreateConfig()
         {
-            var config = SpeechConfig.FromSubscription("7288c10f030b4911a55596df1c605599", "eastus");
+            var config = SpeechConfig.FromSubscription("SPEECH_KEY", "eastus");
             config.SpeechRecognitionLanguage = "ro-RO";
             config.SpeechSynthesisLanguage = "ro";
             config.SpeechSynthesisVoiceName = "ro-RO-EmilNeural";
@@ -106,7 +106,7 @@ namespace OpenAI_Conversation_Demo
 
         private static SpeechTranslationConfig CreateTranslationConfig()
         {
-            var speechTranslationConfig = SpeechTranslationConfig.FromSubscription("7288c10f030b4911a55596df1c605599", "eastus");
+            var speechTranslationConfig = SpeechTranslationConfig.FromSubscription("SPEECH_KEY", "eastus");
             speechTranslationConfig.SpeechRecognitionLanguage = "ro-RO";
             speechTranslationConfig.AddTargetLanguage("en");
 
@@ -117,7 +117,7 @@ namespace OpenAI_Conversation_Demo
         static async Task Main(string[] args)
         {
             Console.OutputEncoding = System.Text.Encoding.Unicode;
-            var apiKey = "85e3ba53e7a94f999e0d602b6a1775da";
+            var apiKey = "OPEN_AI_KEY";
 
             var gpt3 = new OpenAIService(new OpenAiOptions()
             {

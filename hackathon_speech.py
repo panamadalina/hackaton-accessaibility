@@ -12,15 +12,10 @@ import keyboard
 #         break
 # from ro_diacritics import restore_diacritics
 
-# os.environ["SPEECH_KEY"] = "7288c10f030b4911a55596df1c605599"
-# os.environ["SPEECH_REGION"] = "eastus"
-# os.environ["OPEN_AI_KEY"] = "965ec6b0fc474282a0ea09a54d8932d9"
-# os.environ["OPEN_AI_ENDPOINT"] = "https://azure-openai-hackathon-accessability.openai.azure.com/"
-
 # This example requires environment variables named "OPEN_AI_KEY" and "OPEN_AI_ENDPOINT"
 # Your endpoint should look like the following https://YOUR_OPEN_AI_RESOURCE_NAME.openai.azure.com/
-openai.api_key = "965ec6b0fc474282a0ea09a54d8932d9"
-openai.api_base =  "https://azure-openai-hackathon-accessability.openai.azure.com/"
+openai.api_key = "OPEN_AI_KEY"
+openai.api_base =  "OPEN_AI_ENDPOINT"
 openai.api_type = 'azure'
 openai.api_version = '2022-12-01'
 
@@ -28,7 +23,7 @@ openai.api_version = '2022-12-01'
 deployment_id='azure-openai-davinci'
 
 # This example requires environment variables named "SPEECH_KEY" and "SPEECH_REGION"
-speech_config = speechsdk.SpeechConfig(subscription="7288c10f030b4911a55596df1c605599", region="eastus")
+speech_config = speechsdk.SpeechConfig(subscription="SPEECH_KEY", region="eastus")
 audio_output_config = speechsdk.audio.AudioOutputConfig(use_default_speaker=True)
 audio_config = speechsdk.audio.AudioConfig(use_default_microphone=True)
 

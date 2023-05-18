@@ -15,7 +15,8 @@ const fs = require('fs');
  */
 const speechToText = async (key, region, audio, language)=> {
     
-  //not implemented
+  //not implemented on the server side
+  //is implemented in the client side: ./public/client.js 
 };
 
 

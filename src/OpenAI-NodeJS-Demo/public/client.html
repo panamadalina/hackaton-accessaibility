@@ -4,6 +4,7 @@
 <head>
   <title>Microsoft Demo</title>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     *{
       background-color: black;
@@ -36,6 +37,9 @@
 </head>
 
 <body>
+
+ 
+
 <div id="content">
 
   <!-- <button id="startSesiuneIntrebari" onclick="startSesiuneIntrebariChat()">Start discutie</button> -->
@@ -74,7 +78,7 @@
   <!-- Speech SDK reference sdk. -->
   <script
     src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@latest/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle-min.js">
-    </script>
+   </script>
 
   <!-- Speech SDK USAGE -->
   <script>
@@ -82,7 +86,7 @@
     var phraseDiv;
 
     // subscription key and region for speech services.
-    var resourceKey = '7288c10f030b4911a55596df1c605599';
+    var resourceKey = 'Azure_Speech_Services_key';
     var resourceRegion = "eastus";
     var authorizationToken;
     var SpeechSDK;
@@ -388,6 +392,8 @@
     });
 
   </script>
+
+
 </body>
 
 </html>

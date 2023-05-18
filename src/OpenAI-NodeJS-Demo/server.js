@@ -5,28 +5,27 @@ const utils = require('./utils');
 const { Configuration, OpenAIApi } = require("openai");
 const { textToSpeech } = require('./az-cognitive-services/from-text-to-speech');
 const { speechToText } = require('./az-cognitive-services/from-speech-to-text');
+require('dotenv').config();
 
-
-const key="7288c10f030b4911a55596df1c605599"
-const region='eastus'
+const key=process.env.SPEECH_KEY
+const region=process.env.SPEECH_REGION
 
 const config = new Configuration({
-    apiKey:"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",// process.env.OPENAI_API_KEY,
-    apiBase :  "https://madalinaopenai.openai.azure.com/",
-    apiType:'azure',
-    apiVersion : "2020-08-03",
-    deploymentId:"azure-openai-davinci"
+    apiKey: process.env.OPENAI_API_KEY,
+    apiBase: process.env.OPENAI_API_KEY,
+    apiType: process.env.OPENAI_API_TYPE,
+    apiVersion: process.env.OPENAI_API_VERSION,
+    deploymentId: process.env.OPENAI_API_DEPLOYMENT_ID
   });
 const openai = new OpenAIApi(config);
-// creates a temp file on server, the streams to client
-/* eslint-disable no-unused-vars */
 
-// fn to create express server
+
 const create = async () => {
 
     // server
     const app = express();
     app.use(favicon(path.join(__dirname, './public', 'favicon.ico')));
+    // app.use(express.static(path.join(__dirname, './public/client.js')));
     
     // Log request
     app.use(utils.appLogger);
@@ -83,24 +82,22 @@ const create = async () => {
     });
 /**-------------------- */
 
-    async function askGPT(question){
-   // const prompt= //= "Cate grade vor fi maine?"//req.body.prompt;
-   const context=""//="Cat mai multe detalii"
-    try {
-      if (question == null) {
-        throw new Error("Uh oh, no text was provided");
-      }
-      const answer =await openai.createCompletion({
-        //engine: "davinci",
-        model:'text-davinci-003',
-        prompt: `${question}\n${context}\n`,
-        max_tokens:300
-      });
-        return answer.data;
-        
-    } catch (error) {
-      console.log(error.message);
-    }
+        async function askGPT(question){
+    const context=""//="Cat mai multe detalii"
+        try {
+        if (question == null) {
+            throw new Error("Uh oh, no text was provided");
+        }
+        const answer =await openai.createCompletion({
+            model:process.env.OPENAI_MODEL,
+            prompt: `${question}\n${context}\n`,
+            max_tokens:300
+        });
+            return answer.data;
+            
+        } catch (error) {
+        console.log(error.message);
+        }
 }
 
 
@@ -116,7 +113,6 @@ app.post('/ask', async (req, res) => {
 
 
 /**-------------------- */
-
     // Catch errors
     app.use(utils.logErrors);
     app.use(utils.clientError404Handler);
